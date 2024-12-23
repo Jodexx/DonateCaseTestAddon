@@ -5,9 +5,14 @@ import org.bukkit.event.Listener;
 
 public class MainAddon extends InternalJavaAddon implements Listener {
     private Loader loader;
+
+    @Override
+    public void onLoad() {
+        loader = new Loader(this);
+    }
+
     @Override
     public void onEnable() {
-        loader = new Loader(this);
         loader.load();
     }
 

@@ -1,31 +1,43 @@
 package com.jodexindustries.testaddon.commands;
 
 import com.jodexindustries.donatecase.api.addon.Addon;
-import com.jodexindustries.donatecase.api.data.SubCommandType;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommand;
+import com.jodexindustries.donatecase.api.data.subcommand.SubCommandExecutor;
+import com.jodexindustries.donatecase.api.data.subcommand.SubCommandTabCompleter;
+import com.jodexindustries.donatecase.api.data.subcommand.SubCommandType;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class SecondCommand extends SubCommand {
+public class SecondCommand extends SubCommand<CommandSender> {
 
     public SecondCommand(String name, Addon addon) {
         super(name, addon);
-
-        setType(SubCommandType.PLAYER);
-        setDescription("This is a second command");
-        setArgs(new String[]{"(test)", "(test2)"});
     }
 
     @Override
-    public void execute(@NotNull CommandSender sender, @NotNull String label, String[] args) {
-        sender.sendMessage("Second command");
+    public String getDescription() {
+        return "This is a second command";
     }
 
     @Override
-    public List<String> getTabCompletions(@NotNull CommandSender sender, @NotNull String label, String[] args) {
-        return new ArrayList<>();
+    public String getPermission() {
+        return SubCommandType.PLAYER.permission;
     }
+
+    @Override
+    public String[] getArgs() {
+        return new String[]{"(test)", "(test2)"};
+    }
+
+    @Override
+    public SubCommandExecutor<CommandSender> getExecutor() {
+        return (sender, label, args) -> sender.sendMessage("Second command");
+    }
+
+    @Override
+    public SubCommandTabCompleter<CommandSender> getTabCompleter() {
+        return (sender, label, args) -> new ArrayList<>();
+    }
+
 }

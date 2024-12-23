@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.jodexindustries.testaddon'
-version = '1.0'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
-    compileOnly 'com.jodexindustries.donatecase:DonateCaseAPI:2.2.6.2'
+    compileOnly 'com.jodexindustries.donatecase:spigot-api:2.0.2.1'
     compileOnly("org.jetbrains:annotations:24.0.0")
 
 }

@@ -2,3 +2,4 @@ name: TestAddon
 main: com.jodexindustries.testaddon.boot.MainAddon
 version: 1.0.0
 author: "_Jodex__"
+api: 2.0.2.1

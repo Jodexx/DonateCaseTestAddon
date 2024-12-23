@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirstCommand implements SubCommandExecutor, SubCommandTabCompleter {
+public class FirstCommand implements SubCommandExecutor<CommandSender>, SubCommandTabCompleter<CommandSender> {
 
     @Override
     public void execute(CommandSender sender, @NotNull String label, String[] args) {
