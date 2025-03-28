@@ -1,56 +1,48 @@
 package com.jodexindustries.testaddon.boot;
 
-import com.jodexindustries.donatecase.api.DCAPIBukkit;
+import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.addon.Addon;
-import com.jodexindustries.donatecase.api.addon.external.ExternalJavaAddon;
-import com.jodexindustries.donatecase.api.addon.internal.InternalJavaAddon;
+import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
+import com.jodexindustries.donatecase.api.data.action.CaseAction;
+import com.jodexindustries.donatecase.api.data.animation.CaseAnimation;
+import com.jodexindustries.donatecase.api.data.casedata.gui.typeditem.TypedItem;
+import com.jodexindustries.donatecase.api.data.material.CaseMaterial;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommand;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommandType;
-import com.jodexindustries.donatecase.api.events.KeysTransactionEvent;
-import com.jodexindustries.donatecase.api.manager.ActionManager;
-import com.jodexindustries.donatecase.api.manager.MaterialManager;
-import com.jodexindustries.donatecase.api.manager.SubCommandManager;
+import com.jodexindustries.donatecase.api.event.Subscriber;
+import com.jodexindustries.donatecase.api.event.player.CaseInteractEvent;
+import com.jodexindustries.donatecase.api.event.plugin.KeysTransactionEvent;
 import com.jodexindustries.testaddon.registry.*;
 import com.jodexindustries.testaddon.commands.FirstCommand;
-import com.jodexindustries.testaddon.commands.SecondCommand;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.kyori.event.method.annotation.Subscribe;
 
 import java.util.logging.Logger;
 
-public class Loader implements Listener {
-    private final DCAPIBukkit api;
-    private final Plugin plugin;
+public class Loader implements Subscriber {
+
+    private final DCAPI api = DCAPI.getInstance();
     private final Addon addon;
-
-
-    public Loader(JavaPlugin plugin) {
-        this.addon = new ExternalJavaAddon(plugin);
-        this.api = DCAPIBukkit.get(plugin);
-        this.plugin = plugin;
-    }
 
     public Loader(InternalJavaAddon addon) {
         this.addon = addon;
-        this.api = DCAPIBukkit.get(addon);
-        this.plugin = api.getDonateCase();
     }
 
     public void load() {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        api.getEventBus().register(this);
 
-        // register subcommands
+        api.getEventBus().register(CaseInteractEvent.class, event -> {
+            if(event.action() == CaseInteractEvent.Action.RIGHT) {
+                event.player().sendMessage("Right clicked!");
+            } else {
+                event.player().sendMessage("Left clicked!");
+            }
+        });
 
-        // the first method of registering subcommand
-        SubCommandManager<CommandSender> subCommandManager = api.getSubCommandManager();
+        // register subcommand
         FirstCommand executor = new FirstCommand();
 
-        SubCommand<CommandSender> first = subCommandManager.builder("test")
+        SubCommand first = SubCommand.builder()
+                .name("test")
                 .permission(SubCommandType.PLAYER.permission)
                 .executor(executor)
                 .tabCompleter(executor)
@@ -58,29 +50,38 @@ public class Loader implements Listener {
                 .description("This is cool command!")
                 .build();
 
-        subCommandManager.registerSubCommand(first);
-
-        // the second method of registering subcommand
-        SecondCommand second = new SecondCommand("test2", api.getAddon());
-        subCommandManager.registerSubCommand(second);
+        api.getSubCommandManager().register(first);
 
         // register animation
-        api.getAnimationManager().registerAnimation(
-                api.getAnimationManager().builder("test")
+        api.getAnimationManager().register(
+                CaseAnimation.builder()
+                        .name("test")
                         .animation(TestAnimation.class)
                         .description("Here some description")
                         .build()
         );
 
         // register action
-        ActionManager<Player> actionManager = api.getActionManager();
-        actionManager.registerAction("[test]", new TestAction(), "Awesome action!");
+        api.getActionManager().register(
+                CaseAction.builder()
+                        .name("[test]")
+                        .description("Awesome action!")
+                        .executor(new TestAction()).build()
+        );
 
-        MaterialManager<ItemStack> materialManager = api.getMaterialManager();
-        materialManager.registerMaterial("HEAD", new TestMaterial(), "Default Minecraft heads by nickname");
+        // register material
+        api.getMaterialManager().register(
+                CaseMaterial.builder()
+                        .id("HEAD")
+                        .description("Default Minecraft heads by nickname")
+                        .handler(new TestMaterial())
+                        .build()
+        );
 
-        api.getGuiTypedItemManager().registerItem(
-                api.getGuiTypedItemManager().builder("TEST")
+        // register gui item
+        api.getGuiTypedItemManager().register(
+                TypedItem.builder()
+                        .id("TEST")
                         .description("Some cool item")
                         .handler(new TestTypedItemHandler())
                         .click(new TestTypedItemClickHandler())
@@ -88,24 +89,14 @@ public class Loader implements Listener {
         );
     }
 
-    public void unload() {
-        // unregister subcommands
-        api.getSubCommandManager().unregisterSubCommand("test");
-        api.getSubCommandManager().unregisterSubCommand("test2");
-        // unregister animation
-        api.getAnimationManager().unregisterAnimation("test");
-        // unregister action
-        api.getActionManager().unregisterAction("[test]");
-    }
-
-    @EventHandler
+    @Subscribe
     public void onTransaction(KeysTransactionEvent e) {
         Logger logger = addon.getLogger();
-        logger.info("Transaction: " + e.type());
+        logger.info("Transaction: " + e.transactionType());
         logger.info("Before: " + e.before());
         logger.info("After: " + e.after());
         logger.info("Amount: " + e.amount());
-        logger.info("Player: " + e.playerName());
+        logger.info("Player: " + e.source());
         logger.info("Case type: " + e.caseType());
     }
 }

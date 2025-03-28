@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
-public class TestMaterial implements MaterialHandler<ItemStack> {
+public class TestMaterial implements MaterialHandler {
 
     @Override
     public @NotNull ItemStack handle(@NotNull String context) {

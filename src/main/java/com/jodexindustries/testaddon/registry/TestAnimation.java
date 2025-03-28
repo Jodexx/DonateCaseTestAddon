@@ -1,13 +1,15 @@
 package com.jodexindustries.testaddon.registry;
 
-import com.jodexindustries.donatecase.api.data.animation.JavaAnimationBukkit;
-import org.bukkit.Bukkit;
+import com.jodexindustries.donatecase.api.DCAPI;
+import com.jodexindustries.donatecase.spigot.api.animation.BukkitJavaAnimation;
 
-public class TestAnimation extends JavaAnimationBukkit {
+public class TestAnimation extends BukkitJavaAnimation {
+
+    private final DCAPI api = DCAPI.getInstance();
 
     @Override
     public void start() {
-        getApi().getAnimationManager().animationPreEnd(getCaseData(), getPlayer(), getUuid(), getWinItem());
-        Bukkit.getScheduler().runTaskLater(getApi().getDonateCase(), () -> getApi().getAnimationManager().animationEnd(getCaseData(), getPlayer(), getUuid(), getWinItem()), 20L);
+        preEnd();
+        DCAPI.getInstance().getPlatform().getScheduler().run(api.getPlatform(), this::end, 20L);
     }
 }
